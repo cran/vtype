@@ -1,0 +1,5 @@
+import(randomForest) 
+ 
+ importFrom(stats, quantile, median, mad, predict) 
+ 
+ export(vtype)  

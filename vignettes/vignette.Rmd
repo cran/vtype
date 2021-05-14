@@ -1,0 +1,74 @@
+---
+title:  "Application example"
+author: "Andreas Schulz"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Application example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\usepackage[utf8]{inputenc}
+---
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+library(vtype)
+```
+
+
+## Introduction
+
+The purpose of the package is automatically detecting type of variables in not quality controlled data.
+The prediction is based on a pre-trained random forest model, trained on over 5000 medical variables with OOB accuracy of 99%.
+The accuracy depends heavily on the type and coding style of data. For example, often categorical variables are coded as integers 1 to x, if the number of categories is very large, there is no way to distinguish it from a continuous integer variable.
+Some types are per definition very sensitive to errors in data, like ID, missing or constant, where a single alternative non-missing value makes it not constant or not missing anymore.
+The data is assumed to be cross sectional, where ID is unique (no multiple entries per ID).
+
+It can be used as a first step by data quality control to help sort the variables in advance and get some information about the possible formats.
+
+## Example data set
+
+The data set 'sim_nqc_data' contains 100 observations and 14 artificial variables with some not well formatted or missing values. The data is complete artificial and was not used for training or validation of the random forest model.
+
+```{r, results='asis'}
+knitr::kable(head(sim_nqc_data, 20), caption='Artificial not quality controlled data')
+```
+
+## Application
+### An example on error afflicted data
+
+The application is straightforward, it requires data in data.frame format.
+It is important that all unusual missing values in the data, e.g. the code 9999 for missing values are covered.
+Values as NA, NaN, Inf, NULL and spaces are automatic considered as invalid (missing) values.
+The second column `type` is the estimated type of the variable, and the column `probability` indicates how certain the type is.
+The `format` gives additional information about the possible format of the variable, especially useful for date variables.
+`Class` is just a translation of type into broader categories.
+
+```{r, results='asis'}
+tab <- vtype(sim_nqc_data, miss_values='9999')
+knitr::kable(tab, caption='Application example of vtype')
+```
+
+
+
+### An example with very small sample size
+
+Very small sample size can reduce the prediction performance significantly.
+The `id` variable is now detected as integer, `age` as categorical and `decades` as a date variable.
+
+```{r, results='asis'}
+knitr::kable(vtype(sim_nqc_data[1:10,]), caption='Application example with small sample size')
+```
+
+
+### An example on data without errors
+
+```{r, results='asis'}
+knitr::kable(vtype(mtcars),  caption='Application example on data without errors')
+```
+
+
+
+
+
+
+
+
